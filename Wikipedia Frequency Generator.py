@@ -5,22 +5,19 @@ import csv
 from collections import Counter
 
 def get_sub_links(url):
+    # request 
     response = requests.get(
         url=url,
     )
-
+    # soup object
     soup = BeautifulSoup(response.content, 'html.parser')
 
     main_article = soup.find(class_ = "mw-content-ltr mw-parser-output")
-    #print(main_article)
-
-    #title = soup.find(id="firstHeading")
-    #print(title.text)
 
     allLinks = main_article.find_all("a", href=True)
 
     linkToScrape = []
-
+    # find sub articles
     for link in allLinks:
         # Use this link to scrape
         linkToScrape.append("https://de.wikipedia.org/" + link['href'])
@@ -35,7 +32,7 @@ def list_all_words(list_links):
         response = requests.get(link)
         soup = BeautifulSoup(response.content, 'html.parser')
         main_article = soup.find(class_="mw-content-ltr mw-parser-output")
-
+        # attempt to troubleshoot variation in links
         if main_article is None:
             main_article = soup.find(class_="mw-page-container-inner")
             if main_article is None:
@@ -46,7 +43,7 @@ def list_all_words(list_links):
         # Extract text
         text = main_article.get_text(separator=' ', strip=True)
 
-        # Lowercase, remove punctuation/numbers, and tokenize
+        # Lowercase, remove other symbols
         sub_word_list = re.findall(r'\b[a-zA-Z]{2,}\b', text.lower())
         word_list += sub_word_list
     return word_list
