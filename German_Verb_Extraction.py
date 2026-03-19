@@ -141,7 +141,7 @@ def save_as_csv_de(set_of_verbs:set, file_name:str):
 if __name__ == "__main__":
 
     verbs = get_verbs()
-    verbs = sample_percent(verbs, 0.2)
+    verbs = sample_percent(verbs, 0.05)
     save_as_csv_de(verbs,"German_Verb_Training_Data.csv")
 
     
