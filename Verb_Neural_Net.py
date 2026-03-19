@@ -8,6 +8,7 @@ To accomplish this we use a ByT5 transformer model since this model looks at eac
 import pandas as pd
 from datasets import Dataset
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, Seq2SeqTrainer
+import torch
 
 
 ########################
@@ -45,8 +46,8 @@ def train_model(file:str="German_Verb_Training_Data.csv"):
     ########################
 
     def preprocess_function(examples):
-        inputs = tokenizer(examples["input_text"], max_length=64, truncation=True, padding="max_length")
-        labels = tokenizer(examples["target_text"], max_length=64, truncation=True, padding="max_length")
+        inputs = tokenizer(examples["form"], max_length=64, truncation=True, padding="max_length")
+        labels = tokenizer(examples["root"], max_length=64, truncation=True, padding="max_length")
         inputs["labels"] = labels["input_ids"]
         return inputs
 
@@ -71,14 +72,22 @@ def train_model(file:str="German_Verb_Training_Data.csv"):
     tokenizer.save_pretrained("./lemmatize_verb_model")
 
 def load_verb_lemmatizer(path = "./lemmatize_verb_model"):
-    
+
     loaded_tokenizer = AutoTokenizer.from_pretrained(path)
     loaded_model = AutoModelForSeq2SeqLM.from_pretrained(path)
 
     return load_verb_lemmatizer, loaded_tokenizer
 
 def lemmatize(verb:str, model, tokenizer):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
     input_text = "lemmatize: " + verb
-    input_ids = tokenizer(input_text, return_tensors="pt").input_ids.to("cuda")
+    input_ids = tokenizer(input_text, return_tensors="pt").input_ids.to(device)
     outputs = model.generate(input_ids)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+
+if __name__ == "__main__":
+    # train the model
+    train_model()
