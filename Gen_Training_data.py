@@ -4,13 +4,15 @@ import pickle
 
 def gen_verb_training_data_de(raw_verbs: pd.DataFrame):
 
-    with open("German_Verb_Training_Data.csv",'a', newline='\n', encoding='utf-8') as file:
+    with open("German_Verb_Training_Data.csv",'w', newline='\n', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(["# form", "v"]) # add the heading
+        writer.writerow(["form", "root"]) # add the heading
         for i in range(len(raw_verbs)):
-            for form in {"Präsens_ich", "Präsens_du", "Präsens_er, sie, es", "Präteritum_ich", "Partizip II", "Konjunktiv II_ich", "Imperativ Singular", "Imperativ Plural"}:
-                writer.writerow([verbs_raw.loc[i][form], verbs_raw.loc[i].Infinitive ])
-                file.flush() # writes to file
+            for type in {"Präsens_ich", "Präsens_du", "Präsens_er, sie, es", "Präteritum_ich", "Partizip II", "Konjunktiv II_ich", "Imperativ Singular", "Imperativ Plural"}:
+                form = verbs_raw.loc[i][type]
+                if form != None and form !="-" and form != "—":
+                    writer.writerow([form, verbs_raw.loc[i].Infinitive ])
+                    file.flush() # writes to file
 
 
 

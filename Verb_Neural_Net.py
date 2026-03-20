@@ -35,6 +35,7 @@ def train_model(file:str="German_Verb_Training_Data.csv"):
     ########################
 
     training_data = pd.read_csv(file)
+    training_data = training_data.dropna(subset=['form', 'root']) # was having issues with Nones
 
     #training_data['form'] = "lemmatize: " + training_data['form'] # add an instruction to the training data
 
