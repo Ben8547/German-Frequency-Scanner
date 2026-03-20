@@ -15,7 +15,9 @@ from bs4 import BeautifulSoup # for webscraping
 from time import sleep
 from numpy.random import choice, random
 import re
-from pandas import DataFrame
+from numpy import savetxt, array
+import csv
+from fake_useragent import UserAgent # hopefully solve the issues with rate blocking on verbformen
 
 
 ######
@@ -23,12 +25,7 @@ from pandas import DataFrame
 ######
 
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36 "
-        "(GermanVerbProject/1.0; contact: benjamin.campbell.scout.mail@gmail.com)"
-    )} # we need the header because wikitionary blocks some bot-traffic
+    "User-Agent": (UserAgent().chrome)} # we need the header because wikitionary blocks some bot-traffic
 
 def get_verbs(lang = 'de'):
 
@@ -113,27 +110,34 @@ def get_conjugations_de(verb, session):
                 text = re.sub(r"[^a-zäöüß ]", "", text.lower()) # clean the string
                 text = re.sub(r"^ ", "", text) # remove leading spaces
                 if text not in {'', "ich", "du", "ihr", "wir", "er", "sie", "es", "Sie", " ich", " du", " ihr", " wir", " er", " sie", " es", " Sie"} : # prevent the pronouns from being included
-                    if (verb == 'haben') or text not in {"habe", "hast", "hat", "haben", "habt", "hatte", "hattest", 'hatte', "hatten", "hattet", "hätte", "hättest", "hätten", "hättet"}:
+                    if (verb == 'haben') or text not in {"habe", "hast", "hat", "haben", "habt", "hatte", "hattest", 'hatte', "hatten", "habet", "habest", "hattet", "hätte", "hättest", "hätten", "hättet"}:
                         if (verb == 'sein') or text not in {"sein", "bist", "bin", "seid", "ist"}:
-                            if (verb == "werden") or text not in {'werde', "wirst", "wird", "werden", "werdet", "werdest"}:
+                            if (verb == "werden") or text not in {'werde', "wirst", "wird", "werden", "werdet", "werdest", "würdest", "würden", "würdet", "würdet", "würde", "wollte", ""}:
                                 #print(text) # debug
                                 forms.add(text)
 
     return forms
 
 def save_as_csv_de(set_of_verbs:set, file_name:str):
-    out = DataFrame({"form":[], "root":[]})
 
+    savetxt(file_name,array(["# form","root"]), fmt="%s", delimiter=',') # create the headers
+
+    HEADERS = {
+            "User-Agent": (UserAgent().chrome)}
     session = requests.Session()
-    session.headers.update(HEADERS)
+    session.headers.update(HEADERS) # we want to randomize the header - hopefully this staves off disconnections.
 
-    for v in set_of_verbs:
-        sleep(1 + random() * 2) # sleep from 1 - 3 seconds, hopefully prevents bans, though will take a while to download
-        forms = get_conjugations_de(v, session)
-        for form in forms:
-            out.loc[len(out)] = [form, v]
+    with open(file_name,'a',newline='\n', encoding='utf-8') as file: # mode a is append mode - if we get blocked from the site, this can ensure the progress thus far is saved
+        writer = csv.writer(file)
+        for v in set_of_verbs:
 
-    out.to_csv(file_name)
+            print(f"current verb: {v}")
+            sleep(3 + random() * 7) # sleep from 3 - 10 seconds, hopefully prevents bans, though will take a while to download
+            forms = get_conjugations_de(v, session)
+            for form in forms:
+                writer.writerow([form, v])
+                file.flush() # writes to file
+                #savetxt(file, [form, v], fmt='%s', delimiter=',') 
 
 
 
@@ -141,7 +145,7 @@ def save_as_csv_de(set_of_verbs:set, file_name:str):
 if __name__ == "__main__":
 
     verbs = get_verbs()
-    verbs = sample_percent(verbs, 0.05)
+    verbs = sample_percent(verbs, 0.1)
     save_as_csv_de(verbs,"German_Verb_Training_Data.csv")
 
     
