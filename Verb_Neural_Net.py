@@ -63,8 +63,7 @@ def train_model(file:str="German_Verb_Training_Data.csv"):
         model=model,
         args=training_args,
         train_dataset=tokenized_dataset["train"],
-        eval_dataset=tokenized_dataset["test"],
-        tokenizer=tokenizer,
+        eval_dataset=tokenized_dataset["test"]
     )
 
     trainer.train()
