@@ -22,7 +22,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_id)
 training_args = Seq2SeqTrainingArguments(
     output_dir="./german_lemmatizer",
     per_device_train_batch_size=8,
-    num_train_epochs=5,      # How many times to loop through the data
+    num_train_epochs=1,      # How many times to loop through the data; the training seems to be fairly rapid for this task so we don't need many epochs
     learning_rate=5e-5,
     predict_with_generate=True,
     fp16=True,           
@@ -76,13 +76,13 @@ def load_verb_lemmatizer(path = "./lemmatize_verb_model"):
     loaded_tokenizer = AutoTokenizer.from_pretrained(path)
     loaded_model = AutoModelForSeq2SeqLM.from_pretrained(path)
 
-    return load_verb_lemmatizer, loaded_tokenizer
+    return loaded_model, loaded_tokenizer
 
 def lemmatize(verb:str, model, tokenizer):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
 
-    input_text = "lemmatize: " + verb
+    input_text = verb # "lemmatize: " +
     input_ids = tokenizer(input_text, return_tensors="pt").input_ids.to(device)
     outputs = model.generate(input_ids)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
