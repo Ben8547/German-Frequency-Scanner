@@ -99,7 +99,6 @@ def get_conjugations_de(verb, session):
     
     forms = set()
 
-    # 🔑 ONLY extract from conjugation tables
     tables = soup.select("div.vTbl")
     #print(tables[0]) # debug
 
@@ -127,7 +126,7 @@ def save_as_csv_de(set_of_verbs:set, file_name:str):
     session = requests.Session()
     session.headers.update(HEADERS) # we want to randomize the header - hopefully this staves off disconnections.
 
-    with open(file_name,'a',newline='\n', encoding='utf-8') as file: # mode a is append mode - if we get blocked from the site, this can ensure the progress thus far is saved
+    with open(file_name,'a', newline='\n', encoding='utf-8') as file: # mode a is append mode - if we get blocked from the site, this can ensure the progress thus far is saved
         writer = csv.writer(file)
         for v in set_of_verbs:
 
