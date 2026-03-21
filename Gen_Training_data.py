@@ -1,13 +1,14 @@
 import pandas as pd
 import csv
 import pickle
+import tqdm as tqdm # for progress bar
 
 def gen_verb_training_data_de(raw_verbs: pd.DataFrame):
 
     with open("German_Verb_Training_Data.csv",'w', newline='\n', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["form", "root"]) # add the heading
-        for i in range(len(raw_verbs)):
+        for i in tqdm(range(len(raw_verbs))):
             for types in {"Präsens_ich", "Präsens_du", "Präsens_er, sie, es", "Präteritum_ich", "Partizip II", "Konjunktiv II_ich", "Imperativ Singular", "Imperativ Plural"}:
                 form = verbs_raw.loc[i][types]
                 if form != None and form !="-" and form != "—" and type(form) == str:
