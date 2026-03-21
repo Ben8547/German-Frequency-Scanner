@@ -2,6 +2,7 @@ from de_verb_lstm import lemmatize, Seq2SeqLSTM, encode
 import torch as t
 import pickle
 import pandas as pd
+from tqdm import tqdm # for progress bar
 
 if __name__ == "__main__": # tests
 
@@ -33,7 +34,7 @@ if __name__ == "__main__": # tests
 
     correct = 0
 
-    for i in range(total_verbs):
+    for i in tqdm(range(total_verbs)):
         word = all_verbs["form"][i]
         correct_answer = all_verbs["root"][i]
         answer = lemmatize(model,Encoder,word.lower(),device=device)
