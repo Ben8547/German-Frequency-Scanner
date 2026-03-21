@@ -11,7 +11,8 @@ def gen_verb_training_data_de(raw_verbs: pd.DataFrame):
             for type in {"Präsens_ich", "Präsens_du", "Präsens_er, sie, es", "Präteritum_ich", "Partizip II", "Konjunktiv II_ich", "Imperativ Singular", "Imperativ Plural"}:
                 form = verbs_raw.loc[i][type]
                 if form != None and form !="-" and form != "—":
-                    writer.writerow([form, verbs_raw.loc[i].Infinitive ])
+                    #print(form) # debug
+                    writer.writerow([form, verbs_raw.loc[i].Infinitive ]) # apparently the T5 model requires an instructional prefix, this might be why it was not working
                     file.flush() # writes to file
 
 

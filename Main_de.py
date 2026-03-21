@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 import re
 import csv
 from collections import Counter
-from 
+from Verb_Neural_Net import load_verb_lemmatizer, lemmatize
 
 def get_sub_links(url): # this function returns all of the sublinks to  a given page - this is the main method that we will use to determine which related topics to investigate
     # request 
@@ -55,4 +55,5 @@ def list_all_words(list_links): #
     return word_list
 
 
-    
+verb_model, verb_tokenizer = load_verb_lemmatizer()
+print(lemmatize("ausgekommen",verb_model,verb_tokenizer))

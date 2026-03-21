@@ -7,7 +7,7 @@ To accomplish this we use a ByT5 transformer model since this model looks at eac
 
 import pandas as pd
 from datasets import Dataset
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, Seq2SeqTrainer, DataCollatorForSeq2Seq
 import torch
 
 
@@ -49,7 +49,15 @@ def train_model(file:str="German_Verb_Training_Data.csv"):
     def preprocess_function(examples):
         inputs = tokenizer(examples["form"], max_length=64, truncation=True, padding="max_length")
         labels = tokenizer(examples["root"], max_length=64, truncation=True, padding="max_length")
-        inputs["labels"] = labels["input_ids"]
+
+        labels_ids = labels["input_ids"]
+
+        labels_ids = [
+        [(token if token != tokenizer.pad_token_id else -100) for token in seq]
+        for seq in labels_ids
+        ]
+
+        inputs["labels"] = labels_ids
         return inputs
 
     tokenized_dataset = dataset.map(preprocess_function, batched=True)
@@ -59,11 +67,14 @@ def train_model(file:str="German_Verb_Training_Data.csv"):
     # Start the trainer
     ########################
 
+    data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+
     trainer = Seq2SeqTrainer(
         model=model,
         args=training_args,
         train_dataset=tokenized_dataset["train"],
-        eval_dataset=tokenized_dataset["test"]
+        eval_dataset=tokenized_dataset["test"],
+        data_collator=data_collator
     )
 
     trainer.train()
@@ -82,7 +93,7 @@ def lemmatize(verb:str, model, tokenizer):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
 
-    input_text = verb # "lemmatize: " +
+    input_text = "lemmatize: " + verb
     input_ids = tokenizer(input_text, return_tensors="pt").input_ids.to(device)
     outputs = model.generate(input_ids)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
