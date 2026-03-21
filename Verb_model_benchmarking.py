@@ -40,5 +40,8 @@ if __name__ == "__main__": # tests
         answer = lemmatize(model,Encoder,word.lower(),device=device)
         if answer == correct_answer:
             correct += 1
+        else:
+            #print(word+" : "+answer+" : "+correct_answer)
+            pass
 
     print(f"Fidelity of model is {correct/total_verbs*100.}%")

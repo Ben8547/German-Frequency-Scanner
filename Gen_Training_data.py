@@ -1,7 +1,7 @@
 import pandas as pd
 import csv
 import pickle
-import tqdm as tqdm # for progress bar
+from tqdm import tqdm # for progress bar
 
 def gen_verb_training_data_de(raw_verbs: pd.DataFrame):
 
