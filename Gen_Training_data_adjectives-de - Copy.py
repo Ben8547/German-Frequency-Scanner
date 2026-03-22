@@ -63,16 +63,22 @@ def get_adjectives(ratio_to_store:float = 1.):
 
 
 
-unwanted_auxilaries = { "er", "sie", "Sie", "ist", "es", "sein", "sind", "der", "die", "das", "des", "den", "dem", "ein", "eine", "einen", "einer", "einem",
-                        "eines", "kein", "keiner", "keinen", "keine", "keinem", "keines" }
-other_unwated = set()
+unwanted_auxilaries = [ "sein", "sind", "der", "die", "das", "des", "den", "dem", "ein", "eine", "einen", "einer", "einem",
+                        "eines", "kein", "keiner", "keinen", "keine", "keinem", "keines", "er", "sie", "Sie", "ist", "es", "am"] # order matters so I can't use a set (es cannot go before des)
+other_unwated = list()
 
 for unwanted in unwanted_auxilaries:
-    other_unwated.add("("+unwanted+")")
+    other_unwated.append("("+unwanted+")")
 
-unwanted_auxilaries = unwanted_auxilaries | other_unwated # union the two sets
+unwanted_auxilaries = unwanted_auxilaries + other_unwated # union the two sets
 del other_unwated
 
+def extract_de_fragment(soup_object:BeautifulSoup) -> BeautifulSoup :
+    #out = soup_object.find("h2", id = "German") # this just extracts the title - but it does work for that - will probably need to use RE to get what I want
+    #print(str(soup_object)) # debug
+    out = re.search("<h2 id=\"German\">German</h2>(.*)",str(soup_object),re.DOTALL) # re.DOTALL allows .* to include line breaks hence why it was breaking before
+    out = BeautifulSoup(out.group(1), "html.parser") # return to soup
+    return out
 
 
 def get_forms(dictionary_form:str = "alt"):
@@ -83,32 +89,34 @@ def get_forms(dictionary_form:str = "alt"):
     session.headers.update(HEADERS)
 
     res = session.get(url)
-    res.raise_for_status()
+    res.raise_for_status() # seems to raise an error if an error was encountered when requesting the page - should probably include for safety
 
     soup = BeautifulSoup(res.text, "html.parser")
+
+    soup = extract_de_fragment(soup) # extract only the german words
 
     '''
     The expandable tables of adjective forms (case, plurality and comparative/superlative/standard) are stored in <div class="NavFrame"> elements.
     The actual form are stored in <td> elements.
     '''
 
-    page = soup.find("div", id="mw-pages") # Find the category listing
+    page = soup.find_all("div", class_="NavContent") # Find the category listing
 
-    print(page)
-
-    nav_frames = page.find_all("div", class_="NavFrame")
-
-
-    for frame in nav_frames:
+    for frame in page[0:3]: # was getting extraneuous values when more than three were allowe
         td_elements = frame.find_all("td")
         for td in td_elements:
             td_clean = td.text
             # clean the string of all articles - this is going to be annoying
             for unwanted in unwanted_auxilaries:
-                if unwanted+" " in td_clean: # space after should ensure that these are their own word
-                    td_clean.replace(unwanted,"")
-            if td_clean != None:
+                if unwanted+' ' in td_clean: # space after should ensure that these are their own word
+                    td_clean = td_clean.replace(unwanted,"")
+            td_clean = td_clean.replace("\n","")
+            td_clean = td_clean.replace("—","")
+            td_clean = td_clean.replace(" ","")
+            if td_clean != "":
                 forms.add(td_clean)
+
+    return forms
 
 
 
@@ -116,7 +124,23 @@ def get_forms(dictionary_form:str = "alt"):
 
 if __name__ == '__main__':
 
-    get_forms()
+    #forms = get_forms("hochwertig") # test
+
+    with open("adj_de_training_data.csv", "w", encoding="UTF-8") as train_data: # reset the training data
+        writer = csv.writer(train_data)
+        writer.writerow(["form","root"])
+    
+    # generate the training data
+    with open("500_common_german_adjectives.csv", "r", encoding="UTF-8") as adjective_list:
+        reader = csv.reader(adjective_list)
+        for adj in reader:
+            forms = get_forms(adj[0])
+            with open("adj_de_training_data.csv", "a", encoding="UTF-8",newline='\n') as train_data: # use append mode for this so that we don't overwrite the file
+                writer = csv.writer(train_data)
+                for form in forms:
+                    writer.writerow([form,adj[0]])
+
+
 
     '''training_percent = 0.3
 
