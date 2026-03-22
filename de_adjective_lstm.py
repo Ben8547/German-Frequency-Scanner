@@ -117,7 +117,7 @@ def lemmatize(model, encoder:encode, word, max_len=40, device:str="cpu"):
 
 if __name__ == "__main__": # train the model
 
-    epochs = 10 #number of epochs to run
+    epochs = 15 #number of epochs to run
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     Encode = encode() # essentially just loads in the data and assigns each character and integer that LSTM can interpret.
@@ -162,5 +162,5 @@ if __name__ == "__main__": # train the model
 
     torch.save(model.state_dict(), "./lemmatize_adj_model/de_adj_lemmatizer_model.pt")
 
-    with open("./lemmatize_verb_model/encoder.pkl", "wb") as f: # save the encoder or else we can't ever use the model accurately
+    with open("./lemmatize_adj_model/encoder.pkl", "wb") as f: # save the encoder or else we can't ever use the model accurately
         pickle.dump(Encode, f)
