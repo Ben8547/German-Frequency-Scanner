@@ -12,7 +12,7 @@ if __name__ == "__main__": # tests
 
     # load the model
     model = Seq2SeqLSTM(len(Encoder.char2idx))
-    model.load_state_dict(t.load("./lemmatize_adj_model/de_verb_lemmatizer_model.pt")) # load weights from file
+    model.load_state_dict(t.load("./lemmatize_adj_model/de_adj_lemmatizer_model.pt")) # load weights from file
     
     device = t.device("cuda" if t.cuda.is_available() else "cpu")
     model.to(device)
@@ -21,6 +21,6 @@ if __name__ == "__main__": # tests
 
     # small test:
 
-    for word in {"kaltesten", "kranken", "krakem", "kränkeren", "ältere", "liest", "älteren"}:
+    for word in {"kältesten", "kranken", "krakem", "kränkeren", "ältere", "hohen", "älteren", "höheren", "hochsten"}:
         out = lemmatize(model,Encoder,word.lower(),device=device)
         print(word+' : '+out)

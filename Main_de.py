@@ -54,4 +54,23 @@ def list_all_words(list_links): #
     return word_list
 
 
+def write_word_frequencies(word_list, output_filename="word_frequencies.csv"):
+    # Count word frequencies
+    word_counts = Counter(word_list)
 
+    # Sort by frequency (descending)
+    sorted_word_counts = word_counts.most_common()
+
+    # Write to CSV
+    with open(output_filename, mode='w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['word', 'frequency'])  # Header
+        for word, freq in sorted_word_counts:
+            writer.writerow([word, freq])
+        
+        print(f"Wrote {len(sorted_word_counts)} word frequencies to {output_filename}")
+
+if __name__ == "__main__":
+
+    list = list_all_words(get_sub_links("https://de.wikipedia.org/wiki/Tier")) + list_all_words(get_sub_links("https://de.wikipedia.org/wiki/Pflanze"))
+    write_word_frequencies(list,"Tier_word_frequency")

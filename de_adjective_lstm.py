@@ -117,7 +117,7 @@ def lemmatize(model, encoder:encode, word, max_len=40, device:str="cpu"):
 
 if __name__ == "__main__": # train the model
 
-    epochs = 15 #number of epochs to run
+    epochs = 20 #number of epochs to run
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     Encode = encode() # essentially just loads in the data and assigns each character and integer that LSTM can interpret.
