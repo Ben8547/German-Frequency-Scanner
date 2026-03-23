@@ -97,11 +97,17 @@ def gen_freq_dict(topic="Tier", model = "spaCy"):
     '''Please note that "topic" must be the name of a valid German wikipedia page
     "model" must be either "spaCy" or "custom".'''
     if type(topic) == str:
-        list = list_all_words(get_sub_links("https://de.wikipedia.org/wiki/"+topic))
+        try:
+            list = list_all_words(get_sub_links("https://de.wikipedia.org/wiki/"+topic))
+        except:
+            raise PermissionError("Please choose a valid topic.") # it's probably not right to choose this error, but it'll get the job done
     else: # assume that the topic is iterable
          list = []
          for item in topic:
-            list += list_all_words(get_sub_links("https://de.wikipedia.org/wiki/"+item))
+            try:
+                list += list_all_words(get_sub_links("https://de.wikipedia.org/wiki/"+item))
+            except:
+                raise PermissionError("Please choose a valid topic.")
 
     lemmatized_list = []
     for word in list:
@@ -110,11 +116,17 @@ def gen_freq_dict(topic="Tier", model = "spaCy"):
             # the below would certainly be better if we used spaCy to do the lemmatization, but that would kind of defeat the point of making the AI models to begin with
             if model == "custom":
                 if item.pos_ == "VERB": # if part of speech is verb
-                    
-                if item.pos_ == "ADJ": # is adjective
+                    out = verb.lemmatize(custom_verb_model, verb_Encoder, item.text)
+                elif item.pos_ == "ADJ": # is adjective
+                    out = adjective.lemmatize(custom_adj_model, adj_Encoder, item.text)
+                elif item.pos_ != "PUNCT": # do not allow punctuation
+                    out = item.text
                 
-                else:
+                lemmatized_list.append(out)
+
             elif model == "spaCy":
+                if item.pos_ != "PUNCT":
+                    lemmatized_list.append(item.lemma_)
                  
             else:
                  raise ValueError("Please input a valid model; either \"spaCy\" or \"custom\".")
@@ -126,4 +138,4 @@ def gen_freq_dict(topic="Tier", model = "spaCy"):
 
 if __name__ == "__main__":
 
-    
+    gen_freq_dict()
