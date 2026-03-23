@@ -7,6 +7,29 @@ from bs4 import BeautifulSoup
 import re
 import csv
 from collections import Counter
+import spacy as spacy
+import de_verb_lstm as verb
+import de_adjective_lstm as adjective
+import pickle as pickle
+import torch as t
+
+nlp = spacy.load('de_core_news_sm') # load the German model in - I don't want to download the large ones so we just use small here
+
+# load the encoders
+with open("./lemmatize_adj_model/encoder.pkl", "rb") as f:
+        adj_Encoder:adjective.encode = pickle.load(f)
+with open("./lemmatize_verb_model/encoder.pkl", "rb") as f:
+        verb_Encoder:verb.encode = pickle.load(f)
+
+custom_adj_model = adjective.Seq2SeqLSTM(len(adj_Encoder.char2idx))
+custom_adj_model.load_state_dict(t.load("./lemmatize_adj_model/de_adj_lemmatizer_model.pt")) # load weights from file
+
+custom_verb_model = verb.Seq2SeqLSTM(len(verb_Encoder.char2idx))
+custom_verb_model.load_state_dict(t.load("./lemmatize_verb_model/de_verb_lemmatizer_model.pt")) # load weights from file
+
+device = t.device("cuda" if t.cuda.is_available() else "cpu")
+custom_adj_model.to(device)
+custom_verb_model.to(device)
 
 def get_sub_links(url): # this function returns all of the sublinks to  a given page - this is the main method that we will use to determine which related topics to investigate
     # request 
@@ -70,7 +93,37 @@ def write_word_frequencies(word_list, output_filename="word_frequencies.csv"):
         
         print(f"Wrote {len(sorted_word_counts)} word frequencies to {output_filename}")
 
+def gen_freq_dict(topic="Tier", model = "spaCy"):
+    '''Please note that "topic" must be the name of a valid German wikipedia page
+    "model" must be either "spaCy" or "custom".'''
+    if type(topic) == str:
+        list = list_all_words(get_sub_links("https://de.wikipedia.org/wiki/"+topic))
+    else: # assume that the topic is iterable
+         list = []
+         for item in topic:
+            list += list_all_words(get_sub_links("https://de.wikipedia.org/wiki/"+item))
+
+    lemmatized_list = []
+    for word in list:
+        classify = nlp(word)
+        for item in classify:
+            # the below would certainly be better if we used spaCy to do the lemmatization, but that would kind of defeat the point of making the AI models to begin with
+            if model == "custom":
+                if item.pos_ == "VERB": # if part of speech is verb
+                    
+                if item.pos_ == "ADJ": # is adjective
+                
+                else:
+            elif model == "spaCy":
+                 
+            else:
+                 raise ValueError("Please input a valid model; either \"spaCy\" or \"custom\".")
+
+    write_word_frequencies(lemmatized_list,"Tier_word_frequency")
+
+    # now we remove the words that are the top 1000 most common in the language at large so that the remaining vocabulary is somewaht specific to the discipline at hand.
+
+
 if __name__ == "__main__":
 
-    list = list_all_words(get_sub_links("https://de.wikipedia.org/wiki/Tier")) + list_all_words(get_sub_links("https://de.wikipedia.org/wiki/Pflanze"))
-    write_word_frequencies(list,"Tier_word_frequency")
+    

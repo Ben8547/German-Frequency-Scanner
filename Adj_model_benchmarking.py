@@ -1,4 +1,4 @@
-from de_verb_lstm import lemmatize, Seq2SeqLSTM, encode
+from de_adjective_lstm import lemmatize, Seq2SeqLSTM, encode
 import torch as t
 import pickle
 import pandas as pd
