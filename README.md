@@ -70,19 +70,12 @@ Follow these steps to get the German Frequency Scanner up and running on your lo
 
 To scan a Wikipedia page and its direct subpages, use the `Main_de.py` script.
 
-```bash
-python Main_de.py <wikipedia_url>
-```
+```python
+from Main_de import gen_freq_dict
 
-**Example:**
-```bash
-python Main_de.py "https://de.wikipedia.org/wiki/Deutschland"
+gen_freq_dict(topic = ["Tier","Eisen"],  model = "custom", n = 2000)
+# searches the pages on animals and iron and all subpages; uses the custom models, and removes the 2000 most common words from the list.
 ```
-This will:
-1.  Scrape the provided URL and its direct subpages.
-2.  Extract text, tokenizing and lemmatizing German words (verbs and adjectives).
-3.  Calculate word frequencies.
-4.  Output the results (e.g., to a CSV file or console, as implemented in `Main_de.py`).
 
 ### Generating Training Data
 
