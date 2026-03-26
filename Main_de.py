@@ -12,6 +12,7 @@ import de_verb_lstm as verb
 import de_adjective_lstm as adjective
 import pickle as pickle
 import torch as t
+from numpy import loadtxt
 
 nlp = spacy.load('de_core_news_sm') # load the German model in - I don't want to download the large ones so we just use small here
 
@@ -93,9 +94,15 @@ def write_word_frequencies(word_list, output_filename="word_frequencies.csv"):
         
         print(f"Wrote {len(sorted_word_counts)} word frequencies to {output_filename}")
 
-def gen_freq_dict(topic="Tier", model = "spaCy"):
+freq_list = loadtxt("freq_list.txt",delimiter=" ",dtype=str, encoding='utf-8')
+
+def remove_popular_words(vocab_set:set,n:int): # removes the n <  most popular words from the language in order to isolate discipline specific language.
+    return vocab_set - set(freq_list[:n])
+
+def gen_freq_dict(topic="Tier", model = "spaCy", n:int = 2000):
     '''Please note that "topic" must be the name of a valid German wikipedia page
-    "model" must be either "spaCy" or "custom".'''
+    "model" must be either "spaCy" or "custom".
+    n is the n most popular words to remove from the resultant list.'''
     if type(topic) == str:
         try:
             list = list_all_words(get_sub_links("https://de.wikipedia.org/wiki/"+topic))
@@ -130,6 +137,8 @@ def gen_freq_dict(topic="Tier", model = "spaCy"):
                  
             else:
                  raise ValueError("Please input a valid model; either \"spaCy\" or \"custom\".")
+            
+    lemmatized_list = remove_popular_words(set(lemmatized_list),n)
 
     write_word_frequencies(lemmatized_list,"Tier_word_frequency")
 
